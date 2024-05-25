@@ -1,0 +1,124 @@
+#Heatmap
+
+data <- as.matrix(mtcars)
+data
+heatmap(data, scale="column")
+
+#Correlación
+c<-cor(mtcars)
+corrplot(c, method="number")
+
+#Regresión lineal
+input<-mtcars
+input$am <- as.factor(input$am)
+levels(input$am) <-c("AT", "MT")
+set.seed(12345)
+t.test(input$mpg~input$am)
+fit<-lm(mpg~am,data=input)
+summary(fit)
+fit_all<-lm(mpg~.,data=input)
+fit_best<-step(fit_all,direction = "backward",trace = 0)
+summary(fit_best)
+
+#Anova
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$am <- as.factor(mtcars$am)
+mtcars$vs <- as.factor(mtcars$vs)
+mtcars$gear <- as.factor(mtcars$gear)
+
+# Verify that their data type has been changed
+class(mtcars$cyl)
+
+# Computing one way ANOVA
+AnovaOneWay <- aov(wt~cyl, data = mtcars)
+summary(AnovaOneWay)
+## Tukey multiple comparisons of means
+tukey.test <- TukeyHSD(AnovaOneWay)
+tukey.test
+
+# Levene's test
+leveneTest(wt~cyl, data = mtcars)
+# ANOVA test with no assumption of equal variances
+oneway.test(wt ~ cyl, data = mtcars)
+
+
+#Loop
+# Cargar la base de datos mtcars
+data(mtcars)
+
+# Crear un vector para almacenar los promedios
+promedios <- numeric(ncol(mtcars))
+
+# Loop a través de las columnas de mtcars
+for (i in 1:ncol(mtcars)) {
+  # Calcular el promedio de la columna y almacenarlo en el vector
+  promedios[i] <- mean(mtcars[, i])
+}
+
+# Asignar nombres a los promedios
+names(promedios) <- colnames(mtcars)
+
+# Mostrar los promedios
+print(promedios)
+
+#PCA
+pcaCars <- princomp(mtcars, cor = TRUE)
+
+# view objects stored in pcaCars
+names(pcaCars)
+
+
+summary(pcaCars)
+plot(pcaCars)
+
+# scree plot
+plot(pcaCars, type = "l")
+# cluster cars
+carsHC <- hclust(dist(pcaCars$scores), method = "ward.D2")
+
+# dendrogram
+plot(carsHC)
+
+# cut the dendrogram into 3 clusters
+carsClusters <- cutree(carsHC, k = 3)
+
+# draw dendogram with red borders around the 3 clusters 
+plot(carsHC)
+rect.hclust(carsHC, k=3, border="red")
+
+carsDf <- data.frame(pcaCars$scores, "cluster" = factor(carsClusters))
+str(carsDf)
+
+# plot the first 2 PCs with cluster membership
+# need to install ggplot2 and ggrepel packages first
+# using the following command in R: 
+# install.packages(c("ggplot2","ggrepel"))
+library(ggplot2)
+library(ggrepel)
+ggplot(carsDf,aes(x=Comp.1, y=Comp.2)) +
+  geom_text_repel(aes(label = rownames(carsDf))) +
+  theme_classic() +
+  geom_hline(yintercept = 0, color = "gray70") +
+  geom_vline(xintercept = 0, color = "gray70") +
+  geom_point(aes(color = cluster), alpha = 0.55, size = 3) +
+  xlab("PC1") +
+  ylab("PC2") + 
+  xlim(-5, 6) + 
+  ggtitle("PCA plot of Cars")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
